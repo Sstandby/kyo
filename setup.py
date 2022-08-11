@@ -5,7 +5,7 @@ with open("README.md", "r") as stream:
 
 setup(
     name = "kyo",
-    version = "1.0.0",
+    version = "1.0.3",
     url = "https://github.com/Sstandby/kyo",
     download_url = "https://github.com/Sstandby/kyo/tarball/master",
     license = "MIT",
@@ -19,7 +19,7 @@ setup(
         "kyo",
         "amino",
         "aminokyo",
-        "aminobots"
+        "aminobots",
         "amino-bot",
         "narvii",
         "api",
@@ -27,7 +27,7 @@ setup(
         "python3",
         "python3.x",
         "sstandby",
-        "standby"
+        "standby",
         "official"
     ],
     install_requires = [
@@ -35,7 +35,7 @@ setup(
         "requests",
         "six",
         "websockets",
-        "json_minify"
+        "json_minify",
         "websocket-client==1.3.1",
         "aiohttp"
     ],

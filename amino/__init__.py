@@ -2,7 +2,7 @@ __title__ = "kyo"
 __author__ = "Standby"
 __license__ = "MIT"
 __copyright__ = "Copyright 2020-2022 Standby"
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 
 from .acm import ACM
 from .client import Client
