@@ -34,7 +34,7 @@ pip install -U kyo
 - Windows
 
 ```sh
-py -3 -m pip install -U discord.py
+py -3 -m pip install -U kyo
 ```
 
 
