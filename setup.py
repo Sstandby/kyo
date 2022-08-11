@@ -4,7 +4,7 @@ with open("README.md", "r") as stream:
     long_description = stream.read()
 
 setup(
-    name = "Amino.py",
+    name = "kyo",
     version = "1.0.1",
     url = "https://github.com/Sstandby/kyo",
     download_url = "https://github.com/Sstandby/kyo/tarball/master",
