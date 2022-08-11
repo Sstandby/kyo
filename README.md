@@ -17,7 +17,7 @@ Kyo is a library (from the enhancement of [amino.py](https://github.com/Slimakoi
 
 We start from the fact that there are too many junk code repositories regarding the making of bots thanks to bad code made by users who wanted to misuse the AminoApps api so this time we will moderate in kyo a better way to bring such bots without affecting the platform, besides this we want to imply that we will try to bring a quality library out of the wrong hands by bad intentioned users.
 
-In short; **kyo wants to give the platform an air of quality **.
+In short; **kyo wants to give the platform an air of quality**.
 
 ### Contact:
 
