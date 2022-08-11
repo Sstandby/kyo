@@ -5,7 +5,7 @@ with open("README.md", "r") as stream:
 
 setup(
     name = "kyo",
-    version = "1.0.1",
+    version = "1.0.0",
     url = "https://github.com/Sstandby/kyo",
     download_url = "https://github.com/Sstandby/kyo/tarball/master",
     license = "MIT",
