@@ -1,3 +1,5 @@
+# kyo
+----
 ### ¿Qué significa kyo?
 ----
 
@@ -15,4 +17,3 @@ En resumen; **kyo quiere darle un aire de calidad a la plataforma.**
 ---
 
 Para mantenernos simples y que la gente confie con la realización del bot no mantendremos comuniación mediante de discord por lo que si usted quiere contactar conmigo puede hacerlo libremente mediante mi correo: **standby@sstandby.com**. Por favor, sea breve y directo con lo que quiere (Estoy dispuesto a responder preguntas y aceptar mejoras respecto al codigo).
-# kyo
