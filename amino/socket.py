@@ -20,12 +20,6 @@ class SocketHandler:
         self.reconnectTime = 180
         self.socket_thread = None
 
-
-    async def startup(self):
-        #self.reconnect_thread = Thread(target=self.reconnect_handler)
-        #self.reconnect_thread.start()
-        await asyncio.create_task(self.reconnect_handler())
-
     async def reconnect_handler(self):
         while True:
             await asyncio.create_task(self.run())

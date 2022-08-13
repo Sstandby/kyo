@@ -48,8 +48,7 @@ class Client(Callbacks, SocketHandler):
     async def start_client(self):
         #loop = asyncio.new_event_loop()
         #await asyncio.set_event_loop((self.startup()))
-        await asyncio.create_task(self.startup())
-
+        await self.reconnect_handler()
 
     def parse_headers(self, data = None):
         if data:
