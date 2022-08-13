@@ -21,19 +21,20 @@ class SocketHandler:
         self.socket_thread = None
 
 
-    async def start_reconnect(self):
-        self.reconnect_thread = Thread(target=self.reconnect_handler)
-        await self.reconnect_thread.start()
+    async def startup(self):
+        #self.reconnect_thread = Thread(target=self.reconnect_handler)
+        #self.reconnect_thread.start()
+        await asyncio.create_task(self.reconnect_handler())
 
     async def reconnect_handler(self):
         while True:
-            asyncio.create_task(self.run())
+            await asyncio.create_task(self.run())
             if self.active:
                 time.sleep(self.reconnectTime)
                 if self.debug is True:
                     print(f"[socket][reconnect_handler] Reconnecting Socket")
 
-                await self.close()
+                self.close()
                 asyncio.create_task(self.run())
 
     async def handle_message(self, data):
@@ -54,12 +55,8 @@ class SocketHandler:
 
     async def run(self):
         try:
-            if self.debug is True:
-                print(f"[socket][start] Starting Socket")
-
             if self.client.sid is None:
                 return
-
             final = f"{self.client.device_id}|{int(time.time() * 1000)}"
 
             self.headers = {
@@ -76,12 +73,8 @@ class SocketHandler:
               while self.active:
                  try:
                     msg = await websocket.recv()
-                    print("Prueb")
                     await self.handle_message(msg)
                  except websockets.exceptions.ConnectionClosedOK: continue
-
-            if self.debug is True:
-                print(f"[socket][start] Socket Started")
 
         except Exception as e:
             print(e)
@@ -169,15 +162,15 @@ class Callbacks:
         }
 
     async def _resolve_chat_message(self, data):
-        key = f"{data['o']['chatMessage']['type']}:{data['o']['chatMessage'].get('mediaType', 1)}"
+        key = f"{data['o']['chatMessage']['type']}:{data['o']['chatMessage'].get('mediaType', 0)}"
         return await self.chat_methods.get(key, self.default)(data)
 
     async def _resolve_chat_action_start(self, data):
-        key = data['o'].get('actions', 1)
+        key = data['o'].get('actions', 0)
         return await self.chat_actions_start.get(key, self.default)(data)
 
     async def _resolve_chat_action_end(self, data):
-        key = data['o'].get('actions', 1)
+        key = data['o'].get('actions', 0)
         return await self.chat_actions_end.get(key, self.default)(data)
 
     async def resolve(self, data):
@@ -191,15 +184,15 @@ class Callbacks:
 
     def event(self, type):
         def register_handler(handler):
+            print(f"Pruebas: {handler}")
             if type in self.handlers:
                 self.handlers[type].append(handler)
             else:
                 self.handlers[type] = [handler]
             return handler
-            print(f"si {handler}")
         return register_handler
 
-    async def on_text_message(self, data): await self.call(getframe(1).f_code.co_name, objects.Event(data["o"]).Event)
+    async def on_text_message(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_image_message(self, data): await self.call(getframe(1).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_youtube_message(self, data): await self.call(getframe(1).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_strike_message(self, data): await self.call(getframe(1).f_code.co_name, objects.Event(data["o"]).Event)

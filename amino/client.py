@@ -217,8 +217,14 @@ class Client(Callbacks, SocketHandler):
                 self.profile: objects.UserProfile = objects.UserProfile(self.json["userProfile"]).UserProfile
                 self.secret = self.json["secret"]
                 headers.sid = self.sid
-                await self.start_reconnect()
+                #loop = asyncio.new_event_loop()
+                #await asyncio.set_event_loop((self.startup()))
+
+                await asyncio.create_task(self.startup())
+
                 return json.loads(await response.text())
+
+
 
     async def register(self, nickname: str, email: str, password: str, verificationCode: str, deviceId: str = device.device_id):
         """
@@ -229,6 +235,7 @@ class Client(Callbacks, SocketHandler):
             - **email** : Email of the account.
             - **password** : Password of the account.
             - **verificationCode** : Verification code.
+
             - **deviceId** : The device id being registered to.
 
         **Returns**
