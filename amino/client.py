@@ -45,6 +45,12 @@ class Client(Callbacks, SocketHandler):
     async def _close_session(self):
         if not self.session.closed: await self.session.close()
 
+    async def start_client(self):
+        #loop = asyncio.new_event_loop()
+        #await asyncio.set_event_loop((self.startup()))
+        await asyncio.create_task(self.startup())
+
+
     def parse_headers(self, data = None):
         if data:
             return headers.Headers(data=data, deviceId=self.device_id).headers
@@ -217,11 +223,6 @@ class Client(Callbacks, SocketHandler):
                 self.profile: objects.UserProfile = objects.UserProfile(self.json["userProfile"]).UserProfile
                 self.secret = self.json["secret"]
                 headers.sid = self.sid
-                #loop = asyncio.new_event_loop()
-                #await asyncio.set_event_loop((self.startup()))
-
-                await asyncio.create_task(self.startup())
-
                 return json.loads(await response.text())
 
 
