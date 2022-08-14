@@ -3,7 +3,7 @@ import base64
 import aiohttp
 import asyncio
 import threading
-
+import concurrent.futures
 from uuid import uuid4
 from time import timezone, sleep
 from typing import BinaryIO, Union
@@ -16,7 +16,7 @@ from .socket import Callbacks, SocketHandler
 device = device.DeviceGenerator()
 
 class Client(Callbacks, SocketHandler):
-    def __init__(self, deviceId: str = None, socketDebugging = False):
+    def __init__(self, deviceId: str = None, Debugging = False):
         self.api = "https://service.narvii.com/api/v1"
         self.authenticated = False
         self.configured = False
@@ -24,7 +24,7 @@ class Client(Callbacks, SocketHandler):
         if deviceId is not None: self.device_id = deviceId
         else: self.device_id = device.device_id
 
-        SocketHandler.__init__(self, self, debug=socketDebugging)
+        SocketHandler.__init__(self, self, debug=Debugging)
         Callbacks.__init__(self, self)
 
         self.json = None
@@ -44,11 +44,6 @@ class Client(Callbacks, SocketHandler):
 
     async def _close_session(self):
         if not self.session.closed: await self.session.close()
-
-    async def start_client(self):
-        #loop = asyncio.new_event_loop()
-        #await asyncio.set_event_loop((self.startup()))
-        await self.reconnect_handler()
 
     def parse_headers(self, data = None):
         if data:
@@ -186,7 +181,6 @@ class Client(Callbacks, SocketHandler):
         self.account: objects.UserProfile = await self.get_user_info(uId)
         self.profile: objects.UserProfile = await self.get_user_info(uId)
         headers.sid = self.sid
-        await self.startup()
 
     async def login(self, email: str, password: str):
         """

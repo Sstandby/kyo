@@ -1,17 +1,16 @@
 <div align="center">
 
 # Kyo
-  
+
 [![kyo](https://img.shields.io/pypi/v/kyo.svg?style=flat-square)](https://pypi.python.org/pypi/kyo)
 [![kyo](https://img.shields.io/pypi/pyversions/kyo.svg?style=flat-square)](https://pypi.python.org/pypi/kyo)
 
-# Questions :tada: 
+# Questions :tada:
 </div>
 
 ### What does kyo mean?
 
-Kyo is a library (from the enhancement of [amino.py](https://github.com/Slimakoi/Amino.py)) focused on the development of bots for the [AminoApps](https://aminoapps.com/) platform, so we can refer to Kyō as secret.
-
+Kyo is a library focused on the development of bots for the [AminoApps](https://aminoapps.com/) platform, so we can refer to Kyō as secret.
 
 ### What are kyo's objectives and approach?
 
@@ -36,7 +35,9 @@ pip install -U kyo
 ```sh
 py -3 -m pip install -U kyo
 ```
+### Docs
 
+The api doc will be done through: https://sstandby.com/kyo
 
 ## License
 
