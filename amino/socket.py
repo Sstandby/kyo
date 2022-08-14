@@ -2,7 +2,7 @@ import time
 import json
 import asyncio
 import threading
-import websocket
+import websockets
 
 from sys import _getframe as getframe
 from threading import Thread
@@ -19,47 +19,37 @@ class SocketHandler:
         self.socket_thread = None
         self.reconnectTime = 180
         self.socket_thread = None
-        if self.socket_enabled:
-            self.reconnect_thread = Thread(target=self.reconnect_handler)
-            self.reconnect_thread.start()
 
-        websocket.enableTrace(socket_trace)
-
-    def reconnect_handler(self):
-        # Made by enchart#3410 thx
-        # Fixed by The_Phoenix#3967
+    async def bot(self):
+        await self.run()
         while True:
-            time.sleep(self.reconnectTime)
-
             if self.active:
+                await asyncio.sleep(self.reconnectTime)
                 if self.debug is True:
                     print(f"[socket][reconnect_handler] Reconnecting Socket")
+                await self.close()
+                await self.run()
 
-                self.close()
-                self.run_amino_socket()
+    async def handle_message(self, data):
+        if self.debug is True:
+            print(f"[socket][handle] Data capture: {data}")
+        await self.client.handle_socket_message(data)
 
-    def handle_message(self, ws, data):
-        self.client.handle_socket_message(data)
-        return
 
-    def send(self, data):
+    async def send(self, data):
         if self.debug is True:
             print(f"[socket][send] Sending Data : {data}")
 
         if not self.socket_thread:
-            self.run_amino_socket()
+            await self.run_amino_socket()
             time.sleep(5)
 
         self.socket.send(data)
 
-    def run_amino_socket(self):
+    async def run(self):
         try:
-            if self.debug is True:
-                print(f"[socket][start] Starting Socket")
-
             if self.client.sid is None:
                 return
-
             final = f"{self.client.device_id}|{int(time.time() * 1000)}"
 
             self.headers = {
@@ -68,38 +58,31 @@ class SocketHandler:
                 "NDC-MSG-SIG": helpers.signature(final)
             }
 
-            self.socket = websocket.WebSocketApp(
-                f"{self.socket_url}/?signbody={final.replace('|', '%7C')}",
-                on_message = self.handle_message,
-                header = self.headers
-            )
+            async with websockets.connect(f"{self.socket_url}/?signbody={final.replace('|', '%7C')}", extra_headers=self.headers) as websocket:
+              self.socket = websocket
+              self.active = True
+              if self.debug is True:
+                 print(f"[socket][start] Socket Started")
+              while self.active:
+                 try:
+                    msg = await websocket.recv()
+                    await self.handle_message(msg)
+                 except websockets.exceptions.ConnectionClosedOK: continue
 
-            self.active = True
-            self.socket_thread = Thread(target=self.socket.run_forever)
-            self.socket_thread.start()
-
-            if self.reconnect_thread is None:
-                self.reconnect_thread = Thread(target=self.reconnect_handler)
-                self.reconnect_thread.start()
-
-            if self.debug is True:
-                print(f"[socket][start] Socket Started")
         except Exception as e:
             print(e)
 
-    def close(self):
+    async def close(self):
         if self.debug is True:
             print(f"[socket][close] Closing Socket")
 
         self.active = False
         try:
-            self.socket.close()
+            await self.socket.close()
         except Exception as closeError:
             if self.debug is True:
                 print(f"[socket][close] Error while closing Socket : {closeError}")
-
         return
-
 
 class Callbacks:
     def __init__(self, client):
@@ -183,9 +166,9 @@ class Callbacks:
         key = data['o'].get('actions', 0)
         return await self.chat_actions_end.get(key, self.default)(data)
 
-    def resolve(self, data):
+    async def resolve(self, data):
         data = json.loads(data)
-        return asyncio.create_task(self.methods.get(data["t"], self.default)(data))
+        return await self.methods.get(data["t"], self.default)(data)
 
     async def call(self, type, data):
         if type in self.handlers:
@@ -194,6 +177,7 @@ class Callbacks:
 
     def event(self, type):
         def register_handler(handler):
+            print(f"pruebas: {handler}")
             if type in self.handlers:
                 self.handlers[type].append(handler)
             else:
@@ -225,7 +209,6 @@ class Callbacks:
     async def on_chat_icon_changed(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_voice_chat_start(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_video_chat_start(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
-    async def on_avatar_chat_start(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_voice_chat_end(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_video_chat_end(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_avatar_chat_end(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
@@ -233,12 +216,13 @@ class Callbacks:
     async def on_screen_room_start(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_screen_room_end(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_chat_host_transfered(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
+    async def on_avatar_chat_start(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_text_message_force_removed(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_chat_removed_message(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_text_message_removed_by_admin(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_chat_tip(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_chat_pin_announcement(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
-    async def on_voice_chat_permission_open_to_everyone(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
+    async def on_voice_chat_permission_open_to_everyone(self, data): await self.call(getframe(1).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_voice_chat_permission_invited_and_requested(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_voice_chat_permission_invite_only(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)
     async def on_chat_view_only_enabled(self, data): await self.call(getframe(0).f_code.co_name, objects.Event(data["o"]).Event)

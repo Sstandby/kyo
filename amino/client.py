@@ -3,7 +3,7 @@ import base64
 import aiohttp
 import asyncio
 import threading
-
+import concurrent.futures
 from uuid import uuid4
 from time import timezone, sleep
 from typing import BinaryIO, Union
@@ -16,16 +16,15 @@ from .socket import Callbacks, SocketHandler
 device = device.DeviceGenerator()
 
 class Client(Callbacks, SocketHandler):
-    def __init__(self, deviceId: str = None, socket_enabled = True, socketDebugging = False):
+    def __init__(self, deviceId: str = None, Debugging = False):
         self.api = "https://service.narvii.com/api/v1"
         self.authenticated = False
         self.configured = False
-        self.socket_enabled = socket_enabled
         self.user_agent = device.user_agent
         if deviceId is not None: self.device_id = deviceId
         else: self.device_id = device.device_id
 
-        SocketHandler.__init__(self, self, debug=socketDebugging)
+        SocketHandler.__init__(self, self, debug=Debugging)
         Callbacks.__init__(self, self)
 
         self.json = None
@@ -182,7 +181,6 @@ class Client(Callbacks, SocketHandler):
         self.account: objects.UserProfile = await self.get_user_info(uId)
         self.profile: objects.UserProfile = await self.get_user_info(uId)
         headers.sid = self.sid
-        await self.startup()
 
     async def login(self, email: str, password: str):
         """
@@ -192,9 +190,9 @@ class Client(Callbacks, SocketHandler):
             - **email** : Email of the account.
             - **password** : Password of the account.
 
+        **Returns**
             - **Success** : 200 (int)
 
-        **Returns**
             - **Fail** : :meth:`Exceptions <amino.lib.util.exceptions>`
         """
         data = json.dumps({
@@ -218,11 +216,9 @@ class Client(Callbacks, SocketHandler):
                 self.profile: objects.UserProfile = objects.UserProfile(self.json["userProfile"]).UserProfile
                 self.secret = self.json["secret"]
                 headers.sid = self.sid
-                headers.userIds = self.userId
-
-                if self.socket_enabled:
-                    self.run_amino_socket()
                 return json.loads(await response.text())
+
+
 
     async def register(self, nickname: str, email: str, password: str, verificationCode: str, deviceId: str = device.device_id):
         """
@@ -233,6 +229,7 @@ class Client(Callbacks, SocketHandler):
             - **email** : Email of the account.
             - **password** : Password of the account.
             - **verificationCode** : Verification code.
+
             - **deviceId** : The device id being registered to.
 
         **Returns**
@@ -545,8 +542,8 @@ class Client(Callbacks, SocketHandler):
             if response.status != 200: return exceptions.CheckException(json.loads(await response.text()))
             else: return json.loads(await response.text())["mediaValue"]
 
-    def handle_socket_message(self, data):
-        return self.resolve(data)
+    async def handle_socket_message(self, data):
+        return await self.resolve(data)
 
     async def get_eventlog(self, language: str = "en"):
         async with self.session.get(f"{self.api}/g/s/eventlog/profile?language={language}", headers=self.parse_headers()) as response:
@@ -1701,13 +1698,13 @@ class Client(Callbacks, SocketHandler):
         Delete a Comment on a User's Wall, Blog or Wiki.
 
         **Parameters**
+            - **Success** : 200 (int)
             - **commentId** : ID of the Comment.
             - **userId** : ID of the User. (for Walls)
             - **blogId** : ID of the Blog. (for Blogs)
             - **wikiId** : ID of the Wiki. (for Wikis)
 
         **Returns**
-            - **Success** : 200 (int)
 
             - **Fail** : :meth:`Exceptions <amino.lib.util.exceptions>`
         """

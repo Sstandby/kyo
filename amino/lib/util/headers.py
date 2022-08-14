@@ -1,4 +1,4 @@
-from aminofix.lib.util import device, signature
+from amino.lib.util import device, signature
 
 from uuid import uuid4
 
